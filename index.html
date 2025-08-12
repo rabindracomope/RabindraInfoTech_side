@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rabindra Info Tech</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Inter Font (Google Fonts) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(to right, #007bff, #0056b3);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            font-weight: 700;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden; /* Ensures rounded corners clip content */
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        .file-preview-container {
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #e9ecef;
+            overflow: hidden;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .file-preview {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 0.5rem; /* Apply rounded corners to images/videos inside cards */
+        }
+        .document-icon {
+            font-size: 4rem;
+            color: #6c757d;
+        }
+        .card-body {
+            padding: 1.25rem;
+        }
+        .card-title {
+            font-weight: 600;
+            color: #007bff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card-text-description {
+            font-size: 0.9rem;
+            color: #6c757d;
+            height: 3em; /* Limit height for description */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tag-badge {
+            display: inline-block;
+            background-color: #e0f2f7;
+            color: #007bff;
+            padding: 0.3em 0.6em;
+            border-radius: 0.3rem;
+            font-size: 0.75rem;
+            margin-right: 0.4rem;
+            margin-bottom: 0.4rem;
+        }
+        .action-buttons button {
+            border-radius: 0.4rem;
+            margin-right: 0.5rem;
+        }
+        .modal-content {
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .modal-header {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .form-control, .form-select {
+            border-radius: 0.5rem;
+            border: 1px solid #ced4da;
+            padding: 0.75rem 1rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+        }
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050; /* Above modals */
+        }
+        .toast {
+            min-width: 250px;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        /* Column specific styling */
+        .file-column {
+            border: 1px solid #e2e6ea;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            background-color: #ffffff;
+            min-height: 300px; /* Ensure columns have some height */
+            margin-bottom: 1.5rem; /* Space between columns on smaller screens */
+        }
+        .file-column-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #007bff;
+            text-align: center;
+        }
+        /* Adjust card columns within each file-column for responsiveness */
+        .file-column .row-cols-md-1 > * {
+            flex: 0 0 auto;
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .file-column .row-cols-md-1 > * {
+                width: 100%; /* On medium screens and up, cards take full column width */
+            }
+        }
+        @media (min-width: 992px) {
+            .file-column {
+                margin-bottom: 0; /* No bottom margin for columns on larger screens */
+            }
+        }
+        .no-content-message {
+            text-align: center;
+            color: #6c757d;
+            padding: 2rem 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header text-white">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h1>Rabindra Info Tech</h1>
+            <button class="btn btn-light text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill me-2" viewBox="0 0 16 16">
+                    <path d="M8.5 2.5a.5.5 0 0 0-1 0v5.793L5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 8.293z"/>
+                    <path d="M11.5 1a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 1 0v-2a.5.5 0 0 0-.5-.5m-.5 14a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-1 0v2a.5.5 0 0 0 .5.5M14 6.5a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-1 0v2a.5.5 0 0 0 .5.5m-1.5 9a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-1 0v2a.5.5 0 0 0 .5.5M2 6.5a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-1 0v2a.5.5 0 0 0 .5.5m1.5 9a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-1 0v2a.5.5 0 0 0 .5.5M11 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h6a.5.5 0 0 0 .5-.5m-7 12a.5.5 0 0 0-.5-.5h6a.5.5 0 0 0 0 1h-6a.5.5 0 0 0-.5-.5"/>
+                </svg>
+                Upload New File
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container my-5">
+        <!-- Search and Filter Bar -->
+        <div class="row g-3 mb-4 align-items-center">
+            <div class="col-md-5">
+                <input type="text" id="search-input" class="form-control" placeholder="Search by title or tags...">
+            </div>
+            <div class="col-md-3">
+                <input type="date" id="date-filter" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <select id="type-filter" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="document">Documents</option>
+                    <option value="image">Images</option>
+                    <option value="video">Videos</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" id="reset-filter-btn">Reset Filters</button>
+            </div>
+        </div>
+
+        <!-- File Display Section - Divided into Columns -->
+        <div class="row" id="file-display-columns">
+            <!-- Documents Column -->
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="file-column">
+                    <h4 class="file-column-title">Documents</h4>
+                    <div class="row row-cols-1 g-3" id="document-column-content">
+                        <!-- Document cards will be injected here -->
+                    </div>
+                    <div class="no-content-message" id="no-documents-message" style="display: none;">
+                        No documents found.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Images Column -->
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="file-column">
+                    <h4 class="file-column-title">Images</h4>
+                    <div class="row row-cols-1 g-3" id="image-column-content">
+                        <!-- Image cards will be injected here -->
+                    </div>
+                    <div class="no-content-message" id="no-images-message" style="display: none;">
+                        No images found.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Videos Column -->
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="file-column">
+                    <h4 class="file-column-title">Videos</h4>
+                    <div class="row row-cols-1 g-3" id="video-column-content">
+                        <!-- Video cards will be injected here -->
+                    </div>
+                    <div class="no-content-message" id="no-videos-message" style="display: none;">
+                        No videos found.
+                    </div>
+                </div>
+            </div>
+             <!-- Global no files message, hidden if any column has content -->
+            <div class="col-12 text-center p-5 text-muted" id="global-no-files-message" style="display: none;">
+                <h3>No files uploaded yet. Start by uploading one!</h3>
+            </div>
+        </div>
+    </main>
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="uploadModalLabel">Upload a New File</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="upload-form">
+                <div class="mb-3">
+                    <label for="file-input" class="form-label">Select File</label>
+                    <input class="form-control" type="file" id="file-input" required>
+                </div>
+                <div class="mb-3">
+                    <label for="file-title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="file-title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="file-description" class="form-label">Description (Optional)</label>
+                    <textarea class="form-control" id="file-description" rows="3"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="file-tags" class="form-label">Tags (comma-separated)</label>
+                    <input type="text" class="form-control" id="file-tags">
+                    <div class="form-text">e.g., project, report, vacation, demo</div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload me-2" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                        <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V10.5a.5.5 0 0 1-1 0V2.707L4.354 4.854a.5.5 0 1 1-.708-.708z"/>
+                    </svg>
+                    Upload File
+                </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Container (for toasts) -->
+    <div class="notification-container">
+        <!-- Toasts will be appended here -->
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- IndexedDB Setup ---
+        const DB_NAME = 'RabindraInfoTechDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'uploads';
+
+        let db;
+
+        /**
+         * Opens or creates the IndexedDB database.
+         * @returns {Promise<IDBDatabase>} A promise that resolves with the database instance.
+         */
+        function openDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = event => {
+                    console.error("IndexedDB error:", event.target.error);
+                    displayNotification('danger', 'Error opening database.');
+                    reject("Error opening database");
+                };
+
+                request.onsuccess = event => {
+                    db = event.target.result;
+                    console.log("Database opened successfully");
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = event => {
+                    const db = event.target.result;
+                    // Create object store with 'id' as the key path and autoIncrement
+                    db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                    console.log("Object store created.");
+                };
+            });
+        }
+
+        /**
+         * Saves an entry (file metadata and data) to IndexedDB.
+         * @param {Object} entry - The entry object to save.
+         * @returns {Promise<void>} A promise that resolves when the save is complete.
+         */
+        async function saveEntry(entry) {
+            try {
+                await openDatabase();
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                store.add(entry);
+                return new Promise((resolve, reject) => {
+                    transaction.oncomplete = () => {
+                        displayNotification('success', 'File uploaded successfully!');
+                        resolve();
+                    };
+                    transaction.onerror = event => {
+                        console.error("Save error:", event.target.error);
+                        displayNotification('danger', 'Failed to save file.');
+                        reject(event.target.error);
+                    };
+                });
+            } catch (e) {
+                console.error("Error in saveEntry:", e);
+                displayNotification('danger', 'Failed to save entry (DB issue).');
+            }
+        }
+
+        /**
+         * Loads all entries from IndexedDB.
+         * @returns {Promise<Array<Object>>} A promise that resolves with an array of all entries.
+         */
+        async function loadEntries() {
+            try {
+                await openDatabase();
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.getAll();
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = event => resolve(event.target.result);
+                    request.onerror = event => {
+                        console.error("Load error:", event.target.error);
+                        displayNotification('danger', 'Failed to load files.');
+                        reject(event.target.error);
+                    };
+                });
+            } catch (e) {
+                console.error("Error in loadEntries:", e);
+                displayNotification('danger', 'Failed to load entries (DB issue).');
+                return [];
+            }
+        }
+
+        /**
+         * Deletes an entry from IndexedDB by its ID.
+         * @param {number} id - The ID of the entry to delete.
+         * @returns {Promise<void>} A promise that resolves when the delete is complete.
+         */
+        async function deleteEntry(id) {
+            try {
+                await openDatabase();
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                store.delete(id);
+                return new Promise((resolve, reject) => {
+                    transaction.oncomplete = () => {
+                        displayNotification('info', 'File deleted successfully.');
+                        resolve();
+                    };
+                    transaction.onerror = event => {
+                        console.error("Delete error:", event.target.error);
+                        displayNotification('danger', 'Failed to delete file.');
+                        reject(event.target.error);
+                    };
+                });
+            } catch (e) {
+                console.error("Error in deleteEntry:", e);
+                displayNotification('danger', 'Failed to delete entry (DB issue).');
+            }
+        }
+
+        // --- UI Elements ---
+        const uploadForm = document.getElementById('upload-form');
+        const fileInput = document.getElementById('file-input');
+        const fileTitleInput = document.getElementById('file-title');
+        const fileDescriptionInput = document.getElementById('file-description');
+        const fileTagsInput = document.getElementById('file-tags');
+        const documentColumnContent = document.getElementById('document-column-content');
+        const imageColumnContent = document.getElementById('image-column-content');
+        const videoColumnContent = document.getElementById('video-column-content');
+        const uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
+        const searchInput = document.getElementById('search-input');
+        const dateFilterInput = document.getElementById('date-filter');
+        const typeFilterSelect = document.getElementById('type-filter');
+        const resetFilterBtn = document.getElementById('reset-filter-btn');
+        const globalNoFilesMessage = document.getElementById('global-no-files-message');
+        const noDocumentsMessage = document.getElementById('no-documents-message');
+        const noImagesMessage = document.getElementById('no-images-message');
+        const noVideosMessage = document.getElementById('no-videos-message');
+
+        // --- Constants and Helpers ---
+        const ALLOWED_MIMES = {
+            'image/jpeg': 'image',
+            'image/png': 'image',
+            'application/pdf': 'document',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'document', // .docx
+            'text/plain': 'document',
+            'video/mp4': 'video'
+        };
+
+        // Define specific file size limits in bytes
+        const MAX_IMAGE_SIZE = 5 * 1024 * 1024;   // 5 MB
+        const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50 MB
+        const MAX_VIDEO_SIZE = 2 * 1024 * 1024 * 1024; // 2 GB
+
+        /**
+         * Displays a Bootstrap toast notification.
+         * @param {string} type - 'success', 'danger', 'info', 'warning'
+         * @param {string} message - The message to display.
+         */
+        function displayNotification(type, message) {
+            const notificationContainer = document.querySelector('.notification-container');
+            const toastDiv = document.createElement('div'); // Create the div directly
+            toastDiv.className = `toast align-items-center text-white bg-${type} border-0`;
+            toastDiv.setAttribute('role', 'alert');
+            toastDiv.setAttribute('aria-live', 'assertive');
+            toastDiv.setAttribute('aria-atomic', 'true');
+
+            // Set the inner HTML of the newly created div
+            toastDiv.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            notificationContainer.appendChild(toastDiv); // Append this direct div to the container
+
+            const toast = new bootstrap.Toast(toastDiv, { delay: 5000 }); // Initialize Bootstrap Toast on this direct div
+            toast.show();
+
+            // Remove toast element from DOM after it's hidden
+            toastDiv.addEventListener('hidden.bs.toast', function () {
+                toastDiv.remove(); // Remove the direct div itself
+            });
+        }
+
+
+        /**
+         * Renders the list of files as Bootstrap cards into their respective columns.
+         * @param {Array<Object>} files - An array of file entry objects.
+         */
+        function renderFiles(files) {
+            // Clear all column contents and hide no content messages initially
+            documentColumnContent.innerHTML = '';
+            imageColumnContent.innerHTML = '';
+            videoColumnContent.innerHTML = '';
+            noDocumentsMessage.style.display = 'none';
+            noImagesMessage.style.display = 'none';
+            noVideosMessage.style.display = 'none';
+            globalNoFilesMessage.style.display = 'none';
+
+            if (files.length === 0) {
+                globalNoFilesMessage.style.display = 'block';
+                return;
+            }
+
+            let hasDocuments = false;
+            let hasImages = false;
+            let hasVideos = false;
+
+            files.forEach(file => {
+                const formattedDate = new Date(file.date).toLocaleDateString();
+                let previewHtml;
+                let downloadLinkHtml;
+
+                switch (file.fileType) {
+                    case 'image':
+                        previewHtml = `<img src="${file.fileData}" class="file-preview" alt="${file.title}">`;
+                        downloadLinkHtml = `<a href="${file.fileData}" download="${file.fileName}" class="btn btn-outline-primary btn-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
+                                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V3.5a.5.5 0 0 0-1 0v6.793L4.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                            </svg>
+                                            Download
+                                        </a>`;
+                        hasImages = true;
+                        break;
+                    case 'video':
+                        previewHtml = `<video controls class="file-preview video-preview">
+                                            <source src="${file.fileData}" type="${file.mimeType}">
+                                            Your browser does not support the video tag.
+                                        </video>`;
+                        downloadLinkHtml = `<a href="${file.fileData}" download="${file.fileName}" class="btn btn-outline-primary btn-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
+                                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V3.5a.5.5 0 0 0-1 0v6.793L4.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                            </svg>
+                                            Download
+                                        </a>`;
+                        hasVideos = true;
+                        break;
+                    case 'document':
+                    default:
+                        // Use a simple document icon for documents
+                        previewHtml = `<div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-file-earmark-text document-icon" viewBox="0 0 16 16">
+                                                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0V.5L14.5 3l.5.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                                                <path d="M4.5 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5"/>
+                                            </svg>
+                                            <span class="mt-2 text-center text-break small">${file.fileName}</span>
+                                        </div>`;
+                        downloadLinkHtml = `<a href="${file.fileData}" download="${file.fileName}" class="btn btn-outline-primary btn-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
+                                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V3.5a.5.5 0 0 0-1 0v6.793L4.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                            </svg>
+                                            Download
+                                        </a>`;
+                        hasDocuments = true;
+                        break;
+                }
+
+                const tagsHtml = file.tags.map(tag => `<span class="tag-badge">${tag}</span>`).join('');
+
+                const cardHtml = `
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="file-preview-container">
+                                ${previewHtml}
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title mb-1">${file.title}</h5>
+                                <p class="card-text-description mb-2">${file.description || 'No description provided.'}</p>
+                                <div class="mb-2">
+                                    ${tagsHtml}
+                                </div>
+                                <div class="text-muted small mb-3 mt-auto">Uploaded on: ${formattedDate}</div>
+                                <div class="action-buttons d-flex justify-content-between">
+                                    ${downloadLinkHtml}
+                                    <button class="btn btn-danger btn-sm delete-btn" data-id="${file.id}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill me-1" viewBox="0 0 16 16">
+                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0z"/>
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Append to the correct column
+                if (file.fileType === 'document') {
+                    documentColumnContent.insertAdjacentHTML('beforeend', cardHtml);
+                } else if (file.fileType === 'image') {
+                    imageColumnContent.insertAdjacentHTML('beforeend', cardHtml);
+                } else if (file.fileType === 'video') {
+                    videoColumnContent.insertAdjacentHTML('beforeend', cardHtml);
+                }
+            });
+
+            // Show 'No content' messages for empty columns
+            if (!hasDocuments) noDocumentsMessage.style.display = 'block';
+            if (!hasImages) noImagesMessage.style.display = 'block';
+            if (!hasVideos) noVideosMessage.style.display = 'block';
+
+            // Attach event listeners to new delete buttons
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const idToDelete = parseInt(event.currentTarget.dataset.id);
+                    await deleteEntry(idToDelete);
+                    await updateFileList(); // Reload and re-render after deletion
+                });
+            });
+        }
+
+        /**
+         * Reads a file as a Data URL (Base64).
+         * @param {File} file - The file object to read.
+         * @returns {Promise<string>} A promise that resolves with the Data URL.
+         */
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        /**
+         * Filters the global list of entries based on search and filter criteria.
+         * @param {Array<Object>} entries - The array of all file entries.
+         * @returns {Array<Object>} The filtered array.
+         */
+        function filterEntries(entries) {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filterDate = dateFilterInput.value; // YYYY-MM-DD
+            const filterType = typeFilterSelect.value;
+
+            return entries.filter(entry => {
+                // Search by title or tags
+                const matchesSearch = searchTerm === '' ||
+                                      entry.title.toLowerCase().includes(searchTerm) ||
+                                      entry.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+
+                // Filter by date
+                const entryDate = new Date(entry.date).toISOString().slice(0, 10); // Get YYYY-MM-DD
+                const matchesDate = filterDate === '' || entryDate === filterDate;
+
+                // Filter by type (only apply if a specific type is selected, otherwise show all relevant to columns)
+                const matchesType = filterType === '' || entry.fileType === filterType;
+
+                return matchesSearch && matchesDate && matchesType;
+            });
+        }
+
+        /**
+         * Updates the displayed file list by loading all entries and applying filters.
+         */
+        async function updateFileList() {
+            const allFiles = await loadEntries();
+            const filteredFiles = filterEntries(allFiles);
+            renderFiles(filteredFiles);
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await openDatabase(); // Ensure DB is open on page load
+            await updateFileList(); // Initial load of files
+        });
+
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const file = fileInput.files[0];
+            const title = fileTitleInput.value.trim();
+            const description = fileDescriptionInput.value.trim();
+            const tags = fileTagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+
+            if (!file) {
+                displayNotification('danger', 'Please select a file.');
+                return;
+            }
+            if (!title) {
+                displayNotification('danger', 'Please enter a title.');
+                return;
+            }
+
+            const mimeType = file.type;
+            const fileType = ALLOWED_MIMES[mimeType];
+
+            if (!fileType) {
+                displayNotification('danger', `Unsupported file type: ${mimeType}. Allowed types: images (jpg, png), documents (pdf, docx, txt), videos (mp4).`);
+                return;
+            }
+
+            let maxAllowedSize;
+            let sizeMessage;
+
+            switch (fileType) {
+                case 'image':
+                    maxAllowedSize = MAX_IMAGE_SIZE;
+                    sizeMessage = `${maxAllowedSize / (1024 * 1024)} MB`;
+                    break;
+                case 'document':
+                    maxAllowedSize = MAX_DOCUMENT_SIZE;
+                    sizeMessage = `${maxAllowedSize / (1024 * 1024)} MB`;
+                    break;
+                case 'video':
+                    maxAllowedSize = MAX_VIDEO_SIZE;
+                    sizeMessage = `${maxAllowedSize / (1024 * 1024 * 1024)} GB`;
+                    break;
+                default:
+                    maxAllowedSize = 0; // Should not happen due to fileType check above
+                    sizeMessage = 'N/A';
+            }
+
+            if (file.size > maxAllowedSize) {
+                displayNotification('danger', `File is too large. Max size for ${fileType} is ${sizeMessage}.`);
+                return;
+            }
+
+            try {
+                const fileData = await readFileAsDataURL(file);
+
+                const newEntry = {
+                    date: new Date().toISOString(),
+                    title: title,
+                    description: description,
+                    tags: tags,
+                    fileName: file.name,
+                    fileType: fileType,
+                    mimeType: mimeType, // Store original MIME type for video playback
+                    fileData: fileData // Base64 string of the file
+                };
+
+                await saveEntry(newEntry);
+                uploadModal.hide(); // Close modal on successful upload
+                uploadForm.reset(); // Reset form fields
+                await updateFileList(); // Reload and re-render files
+            } catch (error) {
+                console.error("File upload failed:", error);
+                displayNotification('danger', 'Error processing file. Please try again.');
+            }
+        });
+
+        // Event listeners for search and filter inputs
+        searchInput.addEventListener('input', updateFileList);
+        dateFilterInput.addEventListener('change', updateFileList);
+        typeFilterSelect.addEventListener('change', updateFileList);
+        resetFilterBtn.addEventListener('click', async () => {
+            searchInput.value = '';
+            dateFilterInput.value = '';
+            typeFilterSelect.value = '';
+            await updateFileList();
+        });
+
+    </script>
+</body>
+</html>
